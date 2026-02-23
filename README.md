@@ -4,6 +4,12 @@ Minimal Vite + React + TypeScript scaffold.
 
 Quick start:
 
+create `.env` with:
+
+```
+TICKETMASTER_API_KEY=<API_KEY>
+```
+
 ```bash
 cd nearmee/server
 npm install

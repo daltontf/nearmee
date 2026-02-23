@@ -62,7 +62,6 @@ export default function MapController(
           buildUrl('http://localhost:3001', {
             path: '/api/ticket_master/events',
             queryParams: {
-              apikey: 'XgA5FIqeWKjUegq2BoG9W1k7HMqrGFn4',
               latlong: `${coords.lat},${coords.lng}`,
               segmentName: findParams.selectedCategory,
               radius: findParams.radius,
@@ -83,7 +82,7 @@ export default function MapController(
               const marker = L.circleMarker([lat, lng], { _custom: true }).addTo(map);
               marker.addEventListener('click', (e) => {
                 setSelectedMarkerContent(value as object);
-                map.flyTo([lat, lng], 12);
+                map.flyTo([lat, lng], map.getZoom());
               });
               markers.push(marker);
             }

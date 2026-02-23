@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
-import { url } from "node:inspector";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = 3001;
@@ -12,7 +14,7 @@ app.use(express.json());
 app.get("/api/ticket_master/classifications", async (req: any, res: any) => {
   try {
     const tmRes = await fetch(
-      `https://app.ticketmaster.com/discovery/v2/classifications?apikey=XgA5FIqeWKjUegq2BoG9W1k7HMqrGFn4`
+      `https://app.ticketmaster.com/discovery/v2/classifications?apikey=${process.env.TICKETMASTER_API_KEY}`
     );
 
     if (!tmRes.ok) {
@@ -36,7 +38,7 @@ app.get("/api/ticket_master/events", async (req: any, res: any) => {
   try {
     const params = new URLSearchParams({
       ...req.query,
-      apikey: "XgA5FIqeWKjUegq2BoG9W1k7HMqrGFn4",
+      apikey: `${process.env.TICKETMASTER_API_KEY}`,
       locale: "*",
       unit: "miles",
       test: "false"
