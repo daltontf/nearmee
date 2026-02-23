@@ -2,8 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+html,body,#root { height:100%; margin:0; }
+
+.app {
+  display: grid;
+  grid-template-columns: 300px 6px 1fr;
+  height: 100vh;
+}
+
+.controls {
+  overflow:auto;      /* scroll if needed */
+  display: flex;
+  flex-direction: column;
+}
+
+.venue-event {
+  position: relative;
+  border: 1px solid #ccc;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: white;
+}
+
+.venue-event p {
+  margin: 2px 0;
+}
+
+.close-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+
 .react-datepicker-popper {
   z-index: 9999 !important;
 }
 
-html,body,#root { height:100%; margin:0; }
+.divider {
+  cursor: col-resize;
+  background: #ddd;
+}
+
+
+
