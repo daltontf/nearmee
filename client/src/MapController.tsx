@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L, { LatLngExpression } from 'leaflet';
 import { Circle, useMap, useMapEvents } from 'react-leaflet';
 import { buildUrl } from 'build-url-ts';
@@ -12,8 +12,14 @@ export interface MapControllerProps {
 
 export default function MapController(
   { radius, findParams, setSelectedMarkerContent }: MapControllerProps ) {
-    
+
+    const markerColor = "dodgerblue";
+       
     const map = useMap();
+
+    const [center, setCenter] = useState<LatLngExpression>(map.getCenter());
+    const markersRef = useRef<Map<string, L.CircleMarker>>(new Map());
+    const [focusedLatLngKey, setFocusedLatLngKey] = useState<string | null>(null);
 
     // disable default zoom on double click
     map.doubleClickZoom.disable();
@@ -25,8 +31,6 @@ export default function MapController(
         animate: true
       });
     });
-
-    const [center, setCenter] = useState<LatLngExpression>(map.getCenter());
 
     useMapEvents({
       move: () => {
@@ -49,6 +53,14 @@ export default function MapController(
         resizeObserver.disconnect();
       };
     }, [map]);
+
+    useEffect(() => {
+      markersRef.current.forEach((marker, _) => {
+        marker.setStyle({
+          color: marker.options.latlngKey === focusedLatLngKey ? "green" : markerColor
+        });
+      });
+    }, [focusedLatLngKey]);
 
     useEffect(() => {
       if (!findParams) return;
@@ -75,24 +87,19 @@ export default function MapController(
           .then((json) => {
             console.log('Fetched data:', json);
 
-            let markers: L.CircleMarker[] = [];
 
             for (const [key, value] of Object.entries(json)) {
               const [lat, lng] = key.split('|').map(parseFloat);
-              const marker = L.circleMarker([lat, lng], { _custom: true }).addTo(map);
+              const marker = L.circleMarker([lat, lng], { 
+                 color: markerColor,
+                 latlngKey: key 
+                }).addTo(map);
               marker.addEventListener('click', (e) => {
+                setFocusedLatLngKey(key)
                 setSelectedMarkerContent(value as object);
                 map.flyTo([lat, lng], map.getZoom());
               });
-              markers.push(marker);
-            }
-
-            return () => {
-              markers?.forEach((marker: any) => {
-                if ((marker as any)._custom) {
-                  map.removeLayer(marker);
-                }
-              })
+              markersRef.current.set(key, marker);
             }
           })
       }
