@@ -10,7 +10,10 @@ export default function App() {
   const [radius, setRadius] = useState(25);
   const [findParams, setFindParams] = useState<FindParams | null>(null);
   const [selectedMarkerContent, setSelectedMarkerContent] = useState<object | null>(null);
-
+  const [focusedLatLngKey, setFocusedLatLngKey] = useState<string | null>(null);
+  const [removeMarkerLatLngKey, setRemoveMarkerLatLngKey] = useState<string | null>(null);
+  const [removeEventId, setRemoveEventId] = useState<string | null>(null);
+  
   const startDrag = (e: React.MouseEvent) => {
   const startX = e.clientX;
 
@@ -38,8 +41,11 @@ export default function App() {
       <Controls radius={radius}
         setRadius={setRadius} 
         setFindParams={setFindParams} 
+        focusedLatLngKey={focusedLatLngKey}
         selectedMarkerContent={selectedMarkerContent} 
         setSelectedMarkerContent={setSelectedMarkerContent}
+        setRemoveMarkerLatLngKey={setRemoveMarkerLatLngKey}
+        setRemoveEventId={setRemoveEventId}
         />
       <div
         className="divider"
@@ -57,8 +63,14 @@ export default function App() {
         />
 
         <MapController radius={radius} 
-          findParams={findParams} 
-          setSelectedMarkerContent={setSelectedMarkerContent} />
+          findParams={findParams}
+          focusedLatLngKey={focusedLatLngKey} 
+          removeMarkerLatLngKey={removeMarkerLatLngKey}
+          removeEventId={removeEventId}
+          setFocusedLatLngKey={setFocusedLatLngKey}
+          setRemoveMarkerLatLngKey={setRemoveMarkerLatLngKey}
+          setSelectedMarkerContent={setSelectedMarkerContent} 
+          />
       </MapContainer>
       </div>
     </div>

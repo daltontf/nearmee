@@ -16,22 +16,32 @@ html,body,#root { height:100%; margin:0; }
   flex-direction: column;
 }
 
+.venue-events {
+  text-align: right;
+  cursor: pointer; 
+}
+
+.venue-events .trash-btn {
+  cursor: pointer; 
+}
+
 .venue-event {
   position: relative;
   border: 1px solid #ccc;
   padding: 12px;
   margin-bottom: 10px;
   background: white;
+  text-align: left;
 }
 
 .venue-event p {
   margin: 2px 0;
 }
 
-.close-btn {
+.venue-event .close-btn {
   position: absolute;
-  top: 6px;
-  right: 8px;
+  top: 1px;
+  right: 2px;
   border: none;
   background: transparent;
   font-size: 18px;

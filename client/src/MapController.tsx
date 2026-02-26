@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { use, useEffect, useRef, useState } from 'react';
 import L, { LatLngExpression } from 'leaflet';
 import { Circle, useMap, useMapEvents } from 'react-leaflet';
 import { buildUrl } from 'build-url-ts';
@@ -7,112 +7,166 @@ import { FindParams } from '../../shared/types/FindParams';
 export interface MapControllerProps {
   radius: number;
   findParams: FindParams | null;
+  focusedLatLngKey?: string | null;
+  removeMarkerLatLngKey?: string | null; 
+  removeEventId?: string | null;
+  setFocusedLatLngKey: React.Dispatch<React.SetStateAction<string | null>>;
+  setRemoveMarkerLatLngKey: React.Dispatch<React.SetStateAction<string | null>>;
   setSelectedMarkerContent: React.Dispatch<React.SetStateAction<object | null>>;
 }
 
 export default function MapController(
-  { radius, findParams, setSelectedMarkerContent }: MapControllerProps ) {
+  { radius, 
+    findParams, 
+    focusedLatLngKey, 
+    removeMarkerLatLngKey, 
+    removeEventId,
+    setFocusedLatLngKey, 
+    setRemoveMarkerLatLngKey, 
+    setSelectedMarkerContent }: MapControllerProps) {
 
-    const markerColor = "dodgerblue";
-       
-    const map = useMap();
+  const markerColor = "dodgerblue";
 
-    const [center, setCenter] = useState<LatLngExpression>(map.getCenter());
-    const markersRef = useRef<Map<string, L.CircleMarker>>(new Map());
-    const [focusedLatLngKey, setFocusedLatLngKey] = useState<string | null>(null);
+  const map = useMap();
 
-    // disable default zoom on double click
-    map.doubleClickZoom.disable();
+  const [center, setCenter] = useState<LatLngExpression>(map.getCenter());
+  const markersRef = useRef<Map<string, L.CircleMarker>>(new Map());
 
-    map.on("dblclick", (e) => {
-      const currentZoom = map.getZoom();
+  // disable default zoom on double click
+  map.doubleClickZoom.disable();
 
-      map.setView(e.latlng, currentZoom, {
-        animate: true
-      });
+  map.on("dblclick", (e) => {
+    const currentZoom = map.getZoom();
+
+    map.setView(e.latlng, currentZoom, {
+      animate: true
+    });
+  });
+
+  useMapEvents({
+    move: () => {
+      setCenter(map.getCenter());
+    },
+  });
+
+  useEffect(() => {
+    if (!removeEventId) return;
+
+    const marker = markersRef.current.get(focusedLatLngKey as string);
+      if (marker && marker.options.valueMap.has(removeEventId)) {
+        marker.options.valueMap.delete(removeEventId);
+
+        if (marker.options.valueMap.size === 0) {
+          marker.remove(); // remove from map
+          markersRef.current.delete(focusedLatLngKey as string); // remove from registry
+          setSelectedMarkerContent(null);
+          setFocusedLatLngKey
+        }
+      }
+    }, [removeEventId]);
+  
+  useEffect(() => {
+    if (!removeMarkerLatLngKey) return;
+
+    const marker = markersRef.current.get(removeMarkerLatLngKey);
+
+    if (marker) {
+      marker.remove(); // remove from map
+      markersRef.current.delete(removeMarkerLatLngKey); // remove from registry
+    }
+    setRemoveMarkerLatLngKey(null); // reset the key
+  }, [removeMarkerLatLngKey]);
+
+  // Watch for container resize (e.g. divider drag) and notify Leaflet
+  useEffect(() => {
+    const container = map.getContainer();
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
     });
 
-    useMapEvents({
-      move: () => {
-        setCenter(map.getCenter());
-      },
-    });
+    resizeObserver.observe(container);
 
-    // Watch for container resize (e.g. divider drag) and notify Leaflet
-    useEffect(() => {
-      const container = map.getContainer();
-      if (!container) return;
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [map]);
 
-      const resizeObserver = new ResizeObserver(() => {
-        map.invalidateSize();
-      });
+  useEffect(() => {
+    if (!findParams) return;
 
-      resizeObserver.observe(container);
+    const coords = map.getCenter();
 
-      return () => {
-        resizeObserver.disconnect();
-      };
-    }, [map]);
+    console.log('find:', findParams);
 
-    useEffect(() => {
-      markersRef.current.forEach((marker, _) => {
-        marker.setStyle({
-          color: marker.options.latlngKey === focusedLatLngKey ? "green" : markerColor
-        });
-      });
-    }, [focusedLatLngKey]);
+    if (findParams.selection === 'ticket_master') {
+      fetch(
+        buildUrl('http://localhost:3001', {
+          path: '/api/ticket_master/events',
+          queryParams: {
+            latlong: `${coords.lat},${coords.lng}`,
+            segmentName: findParams.selectedCategory,
+            radius: findParams.radius,
+            unit: 'miles',
+            locale: '*',
+            localStartEndDateTime: findParams.startDate?.substring(0, 10) + 'T00:00:00,' +
+              findParams.endDate?.substring(0, 10) + 'T23:59:59'
+          },
+        })
+      ).then((res) => res.json())
+        .then((json) => {
+          console.log('Fetched data:', json);
 
-    useEffect(() => {
-      if (!findParams) return;
+          for (const [key, values] of Object.entries(json)) {
+            const [lat, lng] = key.split('|').map(parseFloat);
+            const valueMap = new Map<string, object>(
+              values.map(value => [value.id, value])
+            );
 
-      const coords = map.getCenter();
+            let marker = markersRef.current.get(key);
 
-      console.log('find:', findParams);
-
-      if (findParams.selection === 'ticket_master') {
-        fetch(
-          buildUrl('http://localhost:3001', {
-            path: '/api/ticket_master/events',
-            queryParams: {
-              latlong: `${coords.lat},${coords.lng}`,
-              segmentName: findParams.selectedCategory,
-              radius: findParams.radius,
-              unit: 'miles',
-              locale: '*',
-              localStartEndDateTime: findParams.startDate?.substring(0, 10) + 'T00:00:00,' +
-                                     findParams.endDate?.substring(0, 10) + 'T23:59:59'
-            },
-          })
-        ).then((res) => res.json())
-          .then((json) => {
-            console.log('Fetched data:', json);
-
-
-            for (const [key, value] of Object.entries(json)) {
-              const [lat, lng] = key.split('|').map(parseFloat);
-              const marker = L.circleMarker([lat, lng], { 
-                 color: markerColor,
-                 latlngKey: key 
-                }).addTo(map);
+            if (!marker) {
+              const marker = L.circleMarker([lat, lng], {
+                color: markerColor,
+                latLngKey: key,
+                valueMap: valueMap
+              }).addTo(map);
               marker.addEventListener('click', (e) => {
-                setFocusedLatLngKey(key)
-                setSelectedMarkerContent(value as object);
+                setFocusedLatLngKey(prev => {
+                  if (prev) {
+                    const prevMarker = markersRef.current.get(prev);
+                    if (prevMarker) {
+                      prevMarker.setStyle({ color: markerColor });
+                    } 
+                  }
+                  marker.setStyle({ color: "green" });
+                   
+                  map.flyTo(marker.getLatLng(), map.getZoom());
+
+                  return key;
+                });
+                setSelectedMarkerContent(Array.from((e.target as any).options.valueMap.values())
+                  .sort((a, b) => a.dateTime > b.dateTime ? 1 : -1));
                 map.flyTo([lat, lng], map.getZoom());
               });
               markersRef.current.set(key, marker);
+            } else {
+              marker.options.valueMap = new Map([...marker.options.valueMap, ...valueMap]);
             }
-          })
-      }
-    }, [findParams, map]);
+          }
+        })
+    }
+  }, [findParams]);
 
-    return (
-      <Circle
-        center={center}
-        radius={radius * 1609.344}
-        pathOptions={{
-          color: "blue",
-          fillOpacity: 0.001,
-        }}
-      />
-    );
-  }
+  return (
+    <Circle
+      center={center}
+      radius={radius * 1609.344}
+      pathOptions={{
+        color: "blue",
+        fillOpacity: 0.001,
+      }}
+    />
+  );
+}

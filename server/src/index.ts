@@ -80,6 +80,7 @@ app.get("/api/ticket_master/events", async (req: any, res: any) => {
               ({
                 id: event.id,
                 name: event.name,
+                dateTime: event.dates.start.dateTime,
                 localDate: event.dates.start.localDate,
                 localTime: event.dates.start.localTime,
                 venue: event._embedded.venues[0].name,

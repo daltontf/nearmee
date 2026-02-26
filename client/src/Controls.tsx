@@ -10,11 +10,22 @@ interface ControlsProps {
   setRadius: React.Dispatch<React.SetStateAction<number>>,
   setFindParams: React.Dispatch<React.SetStateAction<FindParams | null>>,
   selectedMarkerContent?: object | null,
+  focusedLatLngKey?: string | null,
   setSelectedMarkerContent: React.Dispatch<React.SetStateAction<object | null>>,
+  setRemoveMarkerLatLngKey: React.Dispatch<React.SetStateAction<string | null>>,
+  setRemoveEventId: React.Dispatch<React.SetStateAction<string | null>>,
 }
 
 export default function Controls(
-  { radius, setRadius, setFindParams, selectedMarkerContent, setSelectedMarkerContent }: ControlsProps
+  { radius,
+    setRadius,
+    setFindParams,
+    selectedMarkerContent,
+    setSelectedMarkerContent,
+    focusedLatLngKey, 
+    setRemoveMarkerLatLngKey, 
+    setRemoveEventId,
+    }: ControlsProps
 ) {
   const [selection, setSelection] = useState<string>("");
   const [options, setOptions] = useState<any[]>([]);
@@ -26,8 +37,16 @@ export default function Controls(
     setFindParams({ selection, selectedCategory, radius, startDate: toLocalISOString(startDate as Date), endDate: toLocalISOString(endDate as Date) });
   };
 
-  const handleRemoveVenueEvent = (key: string) => {
+  const handleTrashEvent = () => {
+    setSelectedMarkerContent(null);
+    if (focusedLatLngKey) {
+      setRemoveMarkerLatLngKey(focusedLatLngKey);
+    }
+  }
+
+  const handleRemoveVenueEvent = (key: string, id) => {
     if (!selectedMarkerContent) return;
+    setRemoveEventId(id)
     const updatedContent = { ...selectedMarkerContent };
     delete updatedContent[key];
     setSelectedMarkerContent(updatedContent);
@@ -107,12 +126,17 @@ export default function Controls(
       </button>
       {selectedMarkerContent && (
         <div className="venue-events">
+          <button
+                className="trash-btn"
+                type="button" 
+                onClick={(e) => handleTrashEvent()}              
+              >&#x1F5D1;</button>
           {Object.entries(selectedMarkerContent).map(([key, value]) => (
             <div className="venue-event">
               <button
                 className="close-btn"
                 type="button"
-                onClick={(e) => handleRemoveVenueEvent(key)}
+                onClick={(e) => handleRemoveVenueEvent(key, value.id as string)}
               >
                 ×
               </button>
