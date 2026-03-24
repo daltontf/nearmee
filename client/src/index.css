@@ -16,7 +16,7 @@ html,body,#root { height:100%; margin:0; }
   flex-direction: column;
 }
 
-.venue-events {
+.venue-events, .date-events {
   text-align: right;
   cursor: pointer; 
 }
@@ -25,7 +25,7 @@ html,body,#root { height:100%; margin:0; }
   cursor: pointer; 
 }
 
-.venue-event {
+.venue-event, .date-event {
   position: relative;
   border: 1px solid #ccc;
   padding: 12px;
@@ -34,13 +34,15 @@ html,body,#root { height:100%; margin:0; }
   text-align: left;
 }
 
+.date-event p,
 .venue-event p {
   margin: 2px 0;
 }
 
-.venue-event .close-btn {
+.date-event .button-bar,
+.venue-event .button-bar {
   position: absolute;
-  top: 1px;
+  bottom: 1px;
   right: 2px;
   border: none;
   background: transparent;

@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
 import dotenv from 'dotenv';
+import { MongoClient, Db, Collection } from "mongodb";
 
 dotenv.config();
 
@@ -10,6 +11,49 @@ const PORT = 3001;
 
 app.use(cors());
 app.use(express.json());
+
+const client = new MongoClient("mongodb://localhost:27017");
+
+await client.connect();
+const db: Db = client.db("nearmee");
+
+app.post("/api/events", async (req: any, res: any) => {
+  try {
+    const event = req.body;
+
+    const collection: Collection = db.collection("saved_events");
+    console.log('Saving event:', event);
+    await collection.insertOne({ _id: event.id, event });
+    res.json({ message: "Event saved successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to save event" });
+  }
+});  
+
+app.delete("/api/events/:id", async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+
+    const collection: Collection = db.collection("saved_events");
+    await collection.deleteOne({ _id: id });
+    res.json({ message: "Event deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete event" });
+  }
+});
+
+app.get("/api/events", async (req: any, res: any) => {
+  try {
+    const collection: Collection = db.collection("saved_events");
+    const events = await collection.find({}).toArray();
+    res.json(events.map((doc: any) => doc.event));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch events" });
+  }
+});
 
 app.get("/api/ticket_master/classifications", async (req: any, res: any) => {
   try {
@@ -76,19 +120,22 @@ app.get("/api/ticket_master/events", async (req: any, res: any) => {
           if (!eventMap) return;
 
           for (const [key, events] of eventMap.entries()) {
-            let eventJson = events.map((event: any) => 
-              ({
+            let eventJson = events.map((event: any) => {
+              const primaryClassifications = event.classifications?.filter((c: any) => c.primary);
+              return {
                 id: event.id,
                 name: event.name,
                 dateTime: event.dates.start.dateTime,
-                localDate: event.dates.start.localDate,
-                localTime: event.dates.start.localTime,
-                venue: event._embedded.venues[0].name,
+                localStartDate: event.dates.start.localDate,
+                localStartTime: event.dates.start.localTime,
+                localEndDate: event.dates.end?.localDate,
+                localEndTime: event.dates.end?.localTime,
+                venue: event._embedded.venues.map((v: any) => v.name).join(', '),
                 url: event.url,
-                classifications: event.classifications?.map((c: any) => c.segment?.name ?? '').join(', '), 
-                genres: event.classifications?.map((c: any) => c.genre?.name ?? '').join(', '),
-                subgenres: event.classifications?.map((c: any) => c.subGenre?.name ?? '').join(', ')
-              }));
+                classifications: primaryClassifications?.map((c: any) => c.segment?.name ?? '').join(', '), 
+                genres: primaryClassifications?.map((c: any) => c.genre?.name ?? '').join(', '),
+                subGenres: primaryClassifications?.map((c: any) => c.subGenre?.name ?? '').join(', ')
+            }});
             resp[key] = eventJson 
             console.log(`Processed ${events.length} events for location ${key}`);
           }
