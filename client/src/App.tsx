@@ -38,6 +38,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto' }} className="controls">
       <Controls radius={radius}
         setRadius={setRadius} 
         setFindParams={setFindParams} 
@@ -46,7 +47,8 @@ export default function App() {
         setSelectedMarkerContent={setSelectedMarkerContent}
         setRemoveMarkerLatLngKey={setRemoveMarkerLatLngKey}
         setRemoveEventId={setRemoveEventId}
-        />
+        />         
+      </div>
       <div
         className="divider"
         onMouseDown={startDrag}
@@ -61,7 +63,6 @@ export default function App() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-
         <MapController radius={radius} 
           findParams={findParams}
           focusedLatLngKey={focusedLatLngKey} 

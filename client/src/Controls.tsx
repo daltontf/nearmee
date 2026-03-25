@@ -66,7 +66,7 @@ export default function Controls (
     }
 
     fetch(
-        `http://localhost:3001/api/events/${id}`, {
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/events/${id}`, {
         method: 'DELETE'
       }).then(res => {
         if (!res.ok) {
@@ -91,7 +91,7 @@ export default function Controls (
 
     if (updateDb) {
     fetch(
-        `http://localhost:3001/api/events`, {
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(value)
@@ -118,7 +118,7 @@ export default function Controls (
   useEffect(() => {
     // initialization logic here
     console.log("Component mounted");
-    fetch('http://localhost:3001/api/events')
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/events`)
       .then(res => res.json())
       .then(json => {
         Object.entries(json).forEach(([key, value]) => {
@@ -135,7 +135,7 @@ export default function Controls (
 
   useEffect(() => {
     if (selection) {
-      fetch('http://localhost:3001/api/ticket_master/classifications')
+      fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/ticket_master/classifications`)
         .then(res => res.json())
         .then(json => setOptions(json))
         .catch(err => console.error('Error fetching classifications:', err));

@@ -102,7 +102,7 @@ export default function MapController(
 
     if (findParams.selection === 'ticket_master') {
       fetch(
-        buildUrl('http://localhost:3001', {
+        buildUrl(import.meta.env.VITE_API_URL || 'http://localhost:3001', {
           path: '/api/ticket_master/events',
           queryParams: {
             latlong: `${coords.lat},${coords.lng}`,
