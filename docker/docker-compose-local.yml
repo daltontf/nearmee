@@ -1,0 +1,25 @@
+services:
+  server:
+    build: ../server
+    ports:
+      - "3001:3001"
+    environment:
+      - TICKETMASTER_API_KEY=${TICKETMASTER_API_KEY}
+      - MONGODB_URI=mongodb://mongodb:27017
+    depends_on:
+      - mongodb
+
+  client:
+    build: ../client
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3001
+
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - "27017:27017"
+
+volumes:
+  mongodb_data:

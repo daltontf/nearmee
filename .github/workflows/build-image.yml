@@ -18,11 +18,11 @@ jobs:
 
       - name: Build Docker image for server
         run: |
-          docker build -f server/Dockerfile -t nearmee-server:latest .
+          docker build -f server/Dockerfile -t nearmee-server:latest ./server
 
       - name: Build Docker image for client
         run: |
-          docker build -f client/Dockerfile -t nearmee-client:latest .
+          docker build -f client/Dockerfile -t nearmee-client:latest ./client
 
       # - name: Save Docker images as tars
       #   run: |
