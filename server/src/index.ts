@@ -12,7 +12,7 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
-const client = new MongoClient("mongodb://localhost:27017");
+const client = new MongoClient(process.env.MONGODB_URI || "mongodb://localhost:27017");
 
 await client.connect();
 const db: Db = client.db("nearmee");

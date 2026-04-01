@@ -15,11 +15,10 @@ services:
       - "5173:5173"
     environment:
       - VITE_API_URL=http://localhost:3001
+    volumes:
+      - /var/www/nearmee:/app/dist   
 
   mongodb:
     image: mongodb/mongodb-community-server:latest
     ports:
       - "27017:27017"
-
-volumes:
-  mongodb_data:
