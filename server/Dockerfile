@@ -2,7 +2,7 @@ FROM node:18
 WORKDIR /app
 COPY package.json ./
 COPY tsconfig.json ./
-COPY src/ .
+COPY src/ ./
 RUN npm install
 RUN npm run build
 EXPOSE 3001
