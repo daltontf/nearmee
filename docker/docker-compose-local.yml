@@ -1,6 +1,6 @@
 services:
   server:
-    build: ../server
+    image: daltontf1212/nearmee-server:latest
     ports:
       - "3001:3001"
     environment:
@@ -8,16 +8,7 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017
     depends_on:
       - mongodb
-
-  client:
-    build: ../client
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:3001
-    volumes:
-      - /var/www/nearmee:/app/dist  
-
+ 
   mongodb:
     image: mongodb/mongodb-community-server:latest
     ports:

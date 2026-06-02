@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { MongoClient, Db, Collection } from "mongodb";
 
 dotenv.config();
@@ -11,6 +13,10 @@ const PORT = 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// recreate __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const client = new MongoClient(process.env.MONGODB_URI || "mongodb://localhost:27017");
 
@@ -155,6 +161,14 @@ app.get("/api/ticket_master/events", async (req: any, res: any) => {
     res.status(500).json({ error: "Ticketmaster fetch failed" });
   }
 });
+
+//Serve static files from client dist
+app.use(express.static(path.join(__dirname, '../client-dist')));
+
+// // Catch-all handler: send back index.html for any non-API routes
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client-dist/index.html'));
+// });
 
 app.listen(PORT, () => {
   console.log(`API running at http://localhost:${PORT}`);
