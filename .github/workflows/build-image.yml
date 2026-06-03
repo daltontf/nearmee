@@ -16,13 +16,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image for server
+      - name: Build Docker image 
         run: |
-          docker build -f server/Dockerfile -t nearmee-server:latest ./server
-
-      - name: Build Docker image for client
-        run: |
-          docker build -f client/Dockerfile -t nearmee-client:latest ./client
+          docker build -t nearmee:latest .
 
       # - name: Save Docker images as tars
       #   run: |
@@ -50,7 +46,5 @@ jobs:
 
       - name: Tag and push images
         run: |
-          docker tag nearmee-server:latest daltontf1212/nearmee-server:latest
-          docker push daltontf1212/nearmee-server:latest
-          docker tag nearmee-client:latest daltontf1212/nearmee-client:latest
-          docker push daltontf1212/nearmee-client:latest
+          docker tag nearmee:latest daltontf1212/nearmee:latest
+          docker push daltontf1212/nearmee:latest
